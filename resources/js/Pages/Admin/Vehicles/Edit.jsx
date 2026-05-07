@@ -21,7 +21,8 @@ export default function Edit({ vehicle }) {
         primary_damage:     vehicle.primary_damage ?? '',
         secondary_damage:   vehicle.secondary_damage ?? '',
         highlights:         (vehicle.highlights ?? []).join('\n'),
-        images:             (vehicle.images ?? []).join('\n'),
+        existing_images:    vehicle.images ?? [],
+        new_files:          [],
         estimated_arrival:  vehicle.estimated_arrival ?? '',
         description:        vehicle.description ?? '',
         color:              vehicle.color ?? '',
@@ -30,7 +31,11 @@ export default function Edit({ vehicle }) {
 
     const submit = (e) => {
         e.preventDefault();
-        form.put(route('admin.vehicles.update', vehicle.id));
+        // Inertia + Laravel: file uploads with PUT need POST + _method spoofing.
+        form.transform((data) => ({ ...data, _method: 'put' }))
+            .post(route('admin.vehicles.update', vehicle.id), {
+                forceFormData: true,
+            });
     };
 
     return (

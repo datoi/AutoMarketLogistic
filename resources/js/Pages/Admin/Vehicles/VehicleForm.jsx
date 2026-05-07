@@ -1,4 +1,5 @@
 import { router } from '@inertiajs/react';
+import VehicleImageUploader from '@/Components/VehicleImageUploader';
 
 const CONDITIONS   = ['Excellent', 'Good', 'Fair', 'Poor'];
 const STATUSES     = ['In Transit', 'At Port', 'Available', 'Sold'];
@@ -133,11 +134,13 @@ export default function VehicleForm({ form, onSubmit, submitLabel }) {
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
                 <h3 className="font-semibold text-gray-900 mb-5">Images & Description</h3>
                 <div className="space-y-5">
-                    <Field label="Image URLs (one per line)" error={errors.images}>
-                        <textarea value={data.images} onChange={(e) => setData('images', e.target.value)}
-                            className="input font-mono text-xs" rows={4}
-                            placeholder={"https://example.com/photo1.jpg\nhttps://example.com/photo2.jpg"} />
-                    </Field>
+                    <VehicleImageUploader
+                        existingImages={data.existing_images || []}
+                        newFiles={data.new_files || []}
+                        onChangeExisting={(urls) => setData('existing_images', urls)}
+                        onChangeNewFiles={(files) => setData('new_files', files)}
+                        error={errors['new_files'] || errors['existing_images'] || errors['new_files.0']}
+                    />
                     <Field label="Description" error={errors.description}>
                         <textarea value={data.description} onChange={(e) => setData('description', e.target.value)}
                             className="input" rows={5} placeholder="Describe the vehicle, its history, and condition…" />

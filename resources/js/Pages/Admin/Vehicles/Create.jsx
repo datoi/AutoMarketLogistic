@@ -7,13 +7,16 @@ export default function Create() {
         year: '', make: '', model: '', trim: '', price: '', mileage: '',
         condition: 'Good', status: 'In Transit', lot_number: '', location: '',
         engine: '', fuel_type: 'Gasoline', transmission: 'Automatic', vin: '',
-        primary_damage: '', secondary_damage: '', highlights: '', images: '',
+        primary_damage: '', secondary_damage: '', highlights: '',
+        existing_images: [], new_files: [],
         estimated_arrival: '', description: '', color: '', is_featured: false,
     });
 
     const submit = (e) => {
         e.preventDefault();
-        form.post(route('admin.vehicles.store'));
+        form.post(route('admin.vehicles.store'), {
+            forceFormData: true,
+        });
     };
 
     return (
