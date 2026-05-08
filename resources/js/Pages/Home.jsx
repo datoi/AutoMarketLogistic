@@ -116,68 +116,7 @@ export default function Home({ featured = [] }) {
                 </section>
             )}
 
-            {/* How it works */}
-            <section className="bg-gradient-to-b from-gray-50 to-white py-16 lg:py-24 border-t border-gray-100">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center max-w-2xl mx-auto mb-14">
-                        <span className="text-xs font-semibold text-brand-600 uppercase tracking-wider">Simple Process</span>
-                        <h2 className="text-2xl sm:text-3xl font-bold text-ink-900 mt-2 mb-3">From Auction to Your Door</h2>
-                        <p className="text-ink-500 text-sm sm:text-base">Four steps. We handle everything between selecting your vehicle and delivery.</p>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {[
-                            { step: '01', title: 'Browse Inventory',  desc: 'Explore vehicles in transit or available at our USA partner lots.' },
-                            { step: '02', title: 'Reserve Vehicle',   desc: 'Submit an inquiry and our team confirms availability and price.' },
-                            { step: '03', title: 'We Handle Import',  desc: 'Full logistics: shipping, customs, paperwork — handled end to end.' },
-                            { step: '04', title: 'Take Delivery',     desc: 'Receive your vehicle at your nearest port or doorstep.' },
-                        ].map((item, i) => (
-                            <div key={item.step} className="relative bg-white rounded-2xl p-6 border border-gray-100 shadow-card hover:shadow-card-hover hover:-translate-y-0.5 transition">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="w-12 h-12 bg-brand-50 text-brand-600 rounded-xl flex items-center justify-center font-extrabold text-lg">
-                                        {item.step}
-                                    </div>
-                                    {i < 3 && (
-                                        <svg className="hidden lg:block w-6 h-6 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                        </svg>
-                                    )}
-                                </div>
-                                <h3 className="font-semibold text-ink-900 mb-2">{item.title}</h3>
-                                <p className="text-ink-500 text-sm leading-relaxed">{item.desc}</p>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* Trust strip */}
-            <section className="bg-white py-14 border-t border-gray-100">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <Trust
-                            title="Transparent pricing"
-                            desc="Auction price, shipping, customs and our fee — every cost shown upfront, no surprises."
-                            icon={
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 8c-1.66 0-3 .9-3 2s1.34 2 3 2 3 .9 3 2-1.34 2-3 2m0-8v1m0 8v1m0-10a4 4 0 100 8 4 4 0 000-8z" />
-                            }
-                        />
-                        <Trust
-                            title="Door-to-door delivery"
-                            desc="From the USA auction lot to your driveway. We coordinate every leg of the journey."
-                            icon={
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 17a2 2 0 104 0 2 2 0 00-4 0zm6 0a2 2 0 104 0 2 2 0 00-4 0zM3 6h13l1 4h4v7h-2M3 6v11h6" />
-                            }
-                        />
-                        <Trust
-                            title="Trusted since 2012"
-                            desc="Over a decade of importing premium vehicles for clients across Georgia, Ukraine and beyond."
-                            icon={
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12l2 2 4-4m5 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            }
-                        />
-                    </div>
-                </div>
-            </section>
+           
 
             {/* CTA */}
             <section className="relative bg-ink-900 text-white py-16 lg:py-20 overflow-hidden">
