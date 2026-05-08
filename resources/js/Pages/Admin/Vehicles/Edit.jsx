@@ -32,10 +32,10 @@ export default function Edit({ vehicle }) {
     const submit = (e) => {
         e.preventDefault();
         // Inertia + Laravel: file uploads with PUT need POST + _method spoofing.
-        form.transform((data) => ({ ...data, _method: 'put' }))
-            .post(route('admin.vehicles.update', vehicle.id), {
-                forceFormData: true,
-            });
+        form.transform((data) => ({ ...data, _method: 'put' }));
+        form.post(route('admin.vehicles.update', vehicle.id), {
+            forceFormData: true,
+        });
     };
 
     return (

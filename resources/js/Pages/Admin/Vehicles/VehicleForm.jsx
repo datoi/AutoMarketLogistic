@@ -52,7 +52,7 @@ export default function VehicleForm({ form, onSubmit, submitLabel }) {
                     </Field>
                     <Field label="Estimated Arrival" error={errors.estimated_arrival}>
                         <input type="date" value={data.estimated_arrival} onChange={(e) => setData('estimated_arrival', e.target.value)}
-                            className="input" min={new Date().toISOString().split('T')[0]} />
+                            className="input" />
                     </Field>
                     <Field label="Color" error={errors.color}>
                         <input value={data.color} onChange={(e) => setData('color', e.target.value)}
