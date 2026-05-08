@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -25,7 +26,14 @@ class VehicleController extends Controller
         return Inertia::render('Inventory', [
             'vehicles' => $vehicles,
             'filters'  => $filters,
-            'makes'    => Vehicle::query()->select('make')->distinct()->orderBy('make')->pluck('make'),
+            // Distinct-makes is a full-table scan; cache for 5 min so the inventory
+            // page stays cheap as the catalog grows. Admin save flow doesn't bust this
+            // proactively — a 5-min stale dropdown is acceptable.
+            'makes'    => Cache::remember(
+                'inventory.makes',
+                300,
+                fn () => Vehicle::query()->select('make')->distinct()->orderBy('make')->pluck('make'),
+            ),
         ]);
     }
 

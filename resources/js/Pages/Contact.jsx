@@ -9,6 +9,9 @@ export default function Contact({ vehicleId, vehicleTitle, settings = {} }) {
         phone:           '',
         car_of_interest: vehicleTitle ?? '',
         message:         '',
+        // Honeypot — invisible to humans, irresistible to dumb bots. Server discards
+        // any submission where this is filled in.
+        website:         '',
     });
 
     const submit = (e) => {
@@ -84,6 +87,19 @@ export default function Contact({ vehicleId, vehicleTitle, settings = {} }) {
                             </div>
                         ) : (
                             <form onSubmit={submit} className="space-y-5">
+                                {/* Honeypot — hidden from humans (off-screen + not focusable + autocomplete off) */}
+                                <div aria-hidden="true" style={{ position: 'absolute', left: '-10000px', top: 'auto', width: '1px', height: '1px', overflow: 'hidden' }}>
+                                    <label htmlFor="website">Website (leave blank)</label>
+                                    <input
+                                        id="website"
+                                        type="text"
+                                        name="website"
+                                        tabIndex={-1}
+                                        autoComplete="off"
+                                        value={data.website}
+                                        onChange={(e) => setData('website', e.target.value)}
+                                    />
+                                </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                     <Field label="Full Name *" error={errors.name}>
                                         <input value={data.name} onChange={(e) => setData('name', e.target.value)}

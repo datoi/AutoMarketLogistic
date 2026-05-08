@@ -4,6 +4,7 @@ import ImageGallery from '@/Components/ImageGallery';
 import CarCard from '@/Components/CarCard';
 
 export default function Show({ vehicle, related }) {
+    const isSold = vehicle.status === 'Sold';
     const specs = [
         { label: 'Year',         value: vehicle.year },
         { label: 'Make',         value: vehicle.make },
@@ -32,6 +33,18 @@ export default function Show({ vehicle, related }) {
                     <span>/</span>
                     <span className="text-ink-700 font-medium">{vehicle.year} {vehicle.make} {vehicle.model}</span>
                 </nav>
+
+                {isSold && (
+                    <div className="mb-6 flex items-center gap-3 bg-rose-50 border border-rose-200 text-rose-900 rounded-xl px-4 py-3">
+                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-rose-600 text-white font-bold text-xs">
+                            SOLD
+                        </span>
+                        <div className="text-sm">
+                            <strong className="font-semibold">This vehicle has been sold.</strong>{' '}
+                            Browse our <Link href={route('inventory.index')} className="underline hover:text-rose-700">current inventory</Link> for similar imports.
+                        </div>
+                    </div>
+                )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Left: Gallery + Details */}
@@ -164,32 +177,56 @@ export default function Show({ vehicle, related }) {
                                 )}
                             </div>
 
-                            {/* Inquiry CTA */}
+                            {/* Inquiry CTA — replaced with a "no longer available" notice when sold */}
                             <div className="bg-gradient-to-br from-ink-800 to-ink-900 text-white rounded-2xl p-6 shadow-card">
-                                <h2 className="font-bold text-lg mb-1">Interested in this vehicle?</h2>
-                                <p className="text-sm text-gray-300 mb-5">
-                                    Talk to our import team — we'll confirm availability, pricing and delivery options.
-                                </p>
+                                {isSold ? (
+                                    <>
+                                        <h2 className="font-bold text-lg mb-1">No longer available</h2>
+                                        <p className="text-sm text-gray-300 mb-5">
+                                            This vehicle has already been sold. Tell us what you're looking for and
+                                            we'll source a similar import from USA auctions.
+                                        </p>
+                                        <Link
+                                            href={route('contact')}
+                                            className="flex items-center justify-center gap-2 w-full bg-brand-500 hover:bg-brand-600 text-white font-semibold py-3 rounded-lg transition shadow-lg"
+                                        >
+                                            Find me a similar vehicle
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                            </svg>
+                                        </Link>
+                                    </>
+                                ) : (
+                                    <>
+                                        <h2 className="font-bold text-lg mb-1">Interested in this vehicle?</h2>
+                                        <p className="text-sm text-gray-300 mb-5">
+                                            Talk to our import team — we'll confirm availability, pricing and delivery options.
+                                        </p>
 
-                                <a
-                                    href="tel:+995592243623"
-                                    className="flex items-center justify-center gap-2 w-full bg-brand-500 hover:bg-brand-600 text-white font-semibold py-3 rounded-lg transition shadow-lg"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-                                        <path d="M2 3.5A1.5 1.5 0 013.5 2h2.379a1.5 1.5 0 011.42 1.026l1.04 3.12a1.5 1.5 0 01-.502 1.685l-1.343.96a11.042 11.042 0 005.116 5.116l.96-1.343a1.5 1.5 0 011.685-.502l3.12 1.04A1.5 1.5 0 0118 14.621V17a1.5 1.5 0 01-1.5 1.5h-1C7.387 18.5 1.5 12.613 1.5 5.5v-1z" />
-                                    </svg>
-                                    +995 592 243 623
-                                </a>
+                                        <a
+                                            href="tel:+995592243623"
+                                            className="flex items-center justify-center gap-2 w-full bg-brand-500 hover:bg-brand-600 text-white font-semibold py-3 rounded-lg transition shadow-lg"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                                                <path d="M2 3.5A1.5 1.5 0 013.5 2h2.379a1.5 1.5 0 011.42 1.026l1.04 3.12a1.5 1.5 0 01-.502 1.685l-1.343.96a11.042 11.042 0 005.116 5.116l.96-1.343a1.5 1.5 0 011.685-.502l3.12 1.04A1.5 1.5 0 0118 14.621V17a1.5 1.5 0 01-1.5 1.5h-1C7.387 18.5 1.5 12.613 1.5 5.5v-1z" />
+                                            </svg>
+                                            +995 592 243 623
+                                        </a>
 
-                                <Link
-                                    href={route('contact', { vehicle: vehicle.id })}
-                                    className="mt-3 flex items-center justify-center gap-2 w-full bg-white/10 hover:bg-white/15 border border-white/15 text-white font-semibold py-3 rounded-lg transition"
-                                >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                    </svg>
-                                    Send a Message
-                                </Link>
+                                        <Link
+                                            href={route('contact', {
+                                                vehicle_id: vehicle.id,
+                                                vehicle_title: `${vehicle.year} ${vehicle.make} ${vehicle.model}${vehicle.trim ? ' ' + vehicle.trim : ''}`,
+                                            })}
+                                            className="mt-3 flex items-center justify-center gap-2 w-full bg-white/10 hover:bg-white/15 border border-white/15 text-white font-semibold py-3 rounded-lg transition"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                            </svg>
+                                            Send a Message
+                                        </Link>
+                                    </>
+                                )}
 
                                 <div className="mt-5 pt-5 border-t border-white/10 grid grid-cols-3 gap-3 text-center text-[11px] text-gray-400 uppercase tracking-wider">
                                     <div>

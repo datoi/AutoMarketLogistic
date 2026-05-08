@@ -25,13 +25,23 @@ class InquiryController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        // Honeypot: real visitors leave this blank; bots fill it. Silently 200 so
+        // the bot can't tell it was rejected and won't tweak its strategy.
+        if ($request->filled('website')) {
+            return redirect()->back()->with('success', 'Thank you! We will contact you shortly.');
+        }
+
         $validated = $request->validate([
             'vehicle_id'      => 'nullable|exists:vehicles,id',
             'name'            => 'required|string|max:200',
             'email'           => 'required|email|max:200',
-            'phone'           => 'required|string|max:50',
+            // Phone format: allow digits and the usual punctuation only. Min 6 digits
+            // worth of input rejects obvious junk while staying liberal about formatting.
+            'phone'           => ['required', 'string', 'max:50', 'regex:/^[\d\s+\-().]{6,50}$/'],
             'car_of_interest' => 'nullable|string|max:500',
             'message'         => 'nullable|string|max:2000',
+        ], [
+            'phone.regex' => 'Please enter a valid phone number (digits, spaces, +, -, parentheses only).',
         ]);
 
         Inquiry::create($validated);

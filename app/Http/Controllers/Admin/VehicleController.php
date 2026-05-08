@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Vehicle;
 use App\Services\CloudinaryService;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -17,10 +19,14 @@ class VehicleController extends Controller
 
     public function index(Request $request): Response
     {
+        // Postgres LIKE is case-sensitive; pick ilike there so admin search behaves
+        // identically across drivers.
+        $likeOp = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+
         $vehicles = Vehicle::query()
             ->when($request->search, fn ($q, $s) => $q->where(fn ($inner) => $inner
-                ->where('make', 'like', "%{$s}%")
-                ->orWhere('model', 'like', "%{$s}%")
+                ->where('make', $likeOp, "%{$s}%")
+                ->orWhere('model', $likeOp, "%{$s}%")
             ))
             ->latest()
             ->paginate(15)
@@ -52,6 +58,7 @@ class VehicleController extends Controller
             foreach ($uploaded as $img) {
                 $this->cloudinary->destroy($img['public_id'] ?? null);
             }
+            $this->throwIfUniqueRace($e);
             throw $e;
         }
 
@@ -104,6 +111,7 @@ class VehicleController extends Controller
             foreach ($uploaded as $img) {
                 $this->cloudinary->destroy($img['public_id'] ?? null);
             }
+            $this->throwIfUniqueRace($e);
             throw $e;
         }
 
@@ -127,6 +135,40 @@ class VehicleController extends Controller
 
         return redirect()->route('admin.vehicles.index')
             ->with('success', 'Vehicle deleted.');
+    }
+
+    /**
+     * Re-throws as a 422 ValidationException if the underlying DB error is a
+     * unique-constraint violation on `vin` or `lot_number`. Two admins racing on
+     * the same VIN can both pass the `unique:` validator and then collide at insert.
+     */
+    private function throwIfUniqueRace(\Throwable $e): void
+    {
+        if (! $e instanceof QueryException) {
+            return;
+        }
+        // Postgres SQLSTATE 23505 = unique_violation. MySQL/SQLite use different
+        // codes but error messages all mention the column name, which is enough.
+        $message = strtolower($e->getMessage());
+        $isUniqueViolation = $e->getCode() === '23000' || $e->getCode() === '23505'
+            || str_contains($message, 'unique')
+            || str_contains($message, 'duplicate');
+        if (! $isUniqueViolation) {
+            return;
+        }
+
+        $errors = [];
+        if (str_contains($message, 'vin')) {
+            $errors['vin'] = 'This VIN was just registered by another admin. Please refresh and try again.';
+        }
+        if (str_contains($message, 'lot_number')) {
+            $errors['lot_number'] = 'This lot number was just registered by another admin. Please refresh and try again.';
+        }
+        if ($errors === []) {
+            return;
+        }
+
+        throw ValidationException::withMessages($errors);
     }
 
     /**
@@ -160,8 +202,10 @@ class VehicleController extends Controller
             'make'              => 'required|string|max:100',
             'model'             => 'required|string|max:200',
             'trim'              => 'nullable|string|max:100',
-            'price'             => 'required|numeric|min:0',
-            'mileage'           => 'required|integer|min:0',
+            // Caps line up with the DB column widths (decimal(10,2) and int4) so an
+            // oversized number returns 422 instead of bubbling to a Postgres overflow 500.
+            'price'             => 'required|numeric|min:0|max:99999999.99',
+            'mileage'           => 'required|integer|min:0|max:9999999',
             'condition'         => 'required|in:Excellent,Good,Fair,Poor',
             'status'            => 'required|in:In Transit,At Port,Available,Sold',
             'lot_number'        => $lotRule,

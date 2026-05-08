@@ -33,11 +33,14 @@ class Vehicle extends Model
     {
         if (!empty($filters['search'])) {
             $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('make', 'like', "%{$search}%")
-                  ->orWhere('model', 'like', "%{$search}%")
-                  ->orWhere('vin', 'like', "%{$search}%")
-                  ->orWhere('lot_number', 'like', "%{$search}%");
+            // Postgres LIKE is case-sensitive; ilike isn't. Pick per driver so the
+            // same query "tesla" matches "Tesla" on every backend we support.
+            $likeOp = $query->getConnection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+            $query->where(function ($q) use ($search, $likeOp) {
+                $q->where('make', $likeOp, "%{$search}%")
+                  ->orWhere('model', $likeOp, "%{$search}%")
+                  ->orWhere('vin', $likeOp, "%{$search}%")
+                  ->orWhere('lot_number', $likeOp, "%{$search}%");
             });
         }
 
