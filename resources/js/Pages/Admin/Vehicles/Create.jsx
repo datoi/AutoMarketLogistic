@@ -30,7 +30,7 @@ export default function Create() {
             <Head title="Add Vehicle" />
             <div className="py-6">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <VehicleForm form={form} onSubmit={submit} submitLabel="Create Vehicle" />
+                    <VehicleForm form={form} onSubmit={submit} submitLabel="Create Vehicle" mode="create" />
                 </div>
             </div>
         </AuthenticatedLayout>

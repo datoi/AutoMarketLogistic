@@ -508,6 +508,14 @@ class VehicleSeeder extends Seeder
         ];
 
         foreach ($vehicles as $vehicle) {
+            // Wrap seed URLs into the {url, public_id} shape the app expects post-migration.
+            // public_id is null for non-Cloudinary URLs (the destroy path no-ops on null).
+            if (! empty($vehicle['images'])) {
+                $vehicle['images'] = array_map(
+                    fn ($url) => is_array($url) ? $url : ['url' => $url, 'public_id' => null],
+                    $vehicle['images']
+                );
+            }
             Vehicle::create($vehicle);
         }
     }

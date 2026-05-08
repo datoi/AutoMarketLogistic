@@ -7,6 +7,7 @@ use App\Models\Vehicle;
 use App\Services\CloudinaryService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -39,9 +40,20 @@ class VehicleController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $this->validated($request);
-        $data['images'] = $this->buildImageArray($request, []);
 
-        Vehicle::create($data);
+        // Upload first, then DB-insert. If the insert fails we destroy the just-uploaded
+        // assets so we don't leave orphan blobs in Cloudinary.
+        $uploaded = $this->uploadNewFiles($request);
+
+        try {
+            $data['images'] = $uploaded ?: null;
+            DB::transaction(fn () => Vehicle::create($data));
+        } catch (\Throwable $e) {
+            foreach ($uploaded as $img) {
+                $this->cloudinary->destroy($img['public_id'] ?? null);
+            }
+            throw $e;
+        }
 
         return redirect()->route('admin.vehicles.index')
             ->with('success', 'Vehicle created successfully.');
@@ -59,15 +71,45 @@ class VehicleController extends Controller
         $data = $this->validated($request, $vehicle->id);
 
         $previousImages = $vehicle->images ?? [];
-        $data['images'] = $this->buildImageArray($request, $previousImages);
+        $uploaded = $this->uploadNewFiles($request);
 
-        // Delete any images that were on the vehicle but are no longer in the kept-set.
-        $removedUrls = array_diff($previousImages, $data['images']);
-        foreach ($removedUrls as $url) {
-            $this->cloudinary->destroyByUrl($url);
+        // Trust server-side data for kept images: client only tells us which existing
+        // URLs to keep; we look up the matching {url, public_id} from $previousImages
+        // ourselves so a hostile admin can't inject arbitrary public_ids via the DOM.
+        $keptUrls = array_values(array_intersect(
+            $request->input('existing_images', []) ?: [],
+            array_column($previousImages, 'url')
+        ));
+        $kept = array_values(array_filter(
+            $previousImages,
+            fn ($img) => in_array($img['url'] ?? null, $keptUrls, true)
+        ));
+
+        $combined = array_values(array_merge($kept, $uploaded));
+        $data['images'] = $combined ?: null;
+
+        // Anything in $previousImages that didn't survive the keep-set is a candidate
+        // for Cloudinary delete — but only after the DB commit succeeds. Otherwise a
+        // failing update would orphan still-referenced URLs as 404s.
+        $keptPublicIds = array_filter(array_column($kept, 'public_id'));
+        $toDelete = array_filter(
+            array_column($previousImages, 'public_id'),
+            fn ($pid) => $pid && ! in_array($pid, $keptPublicIds, true)
+        );
+
+        try {
+            DB::transaction(fn () => $vehicle->update($data));
+        } catch (\Throwable $e) {
+            // DB write failed — undo the just-uploaded files so they don't orphan.
+            foreach ($uploaded as $img) {
+                $this->cloudinary->destroy($img['public_id'] ?? null);
+            }
+            throw $e;
         }
 
-        $vehicle->update($data);
+        foreach ($toDelete as $publicId) {
+            $this->cloudinary->destroy($publicId);
+        }
 
         return redirect()->route('admin.vehicles.index')
             ->with('success', 'Vehicle updated successfully.');
@@ -75,36 +117,32 @@ class VehicleController extends Controller
 
     public function destroy(Vehicle $vehicle): RedirectResponse
     {
-        foreach ($vehicle->images ?? [] as $url) {
-            $this->cloudinary->destroyByUrl($url);
-        }
+        $images = $vehicle->images ?? [];
 
         $vehicle->delete();
+
+        foreach ($images as $img) {
+            $this->cloudinary->destroy($img['public_id'] ?? null);
+        }
 
         return redirect()->route('admin.vehicles.index')
             ->with('success', 'Vehicle deleted.');
     }
 
     /**
-     * Combine kept existing image URLs with newly-uploaded files.
-     * `$previousImages` is the source-of-truth list — clients can only keep URLs that already existed.
+     * Upload each new file and return `{url, public_id}` pairs.
+     *
+     * @return array<int, array{url: string, public_id: string}>
      */
-    private function buildImageArray(Request $request, array $previousImages): ?array
+    private function uploadNewFiles(Request $request): array
     {
-        $kept = array_values(array_intersect(
-            $request->input('existing_images', []) ?: [],
-            $previousImages
-        ));
-
         $uploaded = [];
         foreach ((array) $request->file('new_files', []) as $file) {
             if ($file && $file->isValid()) {
                 $uploaded[] = $this->cloudinary->upload($file);
             }
         }
-
-        $combined = array_values(array_merge($kept, $uploaded));
-        return $combined ?: null;
+        return $uploaded;
     }
 
     private function validated(Request $request, ?int $vehicleId = null): array
@@ -140,7 +178,9 @@ class VehicleController extends Controller
             'color'             => 'nullable|string|max:100',
             'is_featured'       => 'nullable|boolean',
 
-            // Images come in two channels: kept-existing URLs + newly uploaded files. Combined cap of 20.
+            // Images: the client sends a flat list of URL strings it wants kept (not
+            // the full {url, public_id} objects — public_id is server-owned). New
+            // uploads come through `new_files`. Combined cap of 20.
             'existing_images'   => 'nullable|array|max:20',
             'existing_images.*' => 'string|url',
             'new_files'         => 'nullable|array|max:20',
@@ -160,7 +200,8 @@ class VehicleController extends Controller
             ]);
         }
 
-        // The image fields aren't fillable on the model — they're rebuilt in buildImageArray().
+        // The image fields aren't fillable on the model — they're rebuilt in the
+        // store/update flow above.
         unset($data['existing_images'], $data['new_files']);
 
         return $data;

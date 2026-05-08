@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const ACCEPT = 'image/jpeg,image/jpg,image/png,image/webp';
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -14,13 +14,15 @@ export default function VehicleImageUploader({
     const inputRef = useRef(null);
     const [dragOver, setDragOver] = useState(false);
     const [localError, setLocalError] = useState(null);
+    const [previews, setPreviews] = useState([]);
 
-    const previews = useMemo(
-        () => newFiles.map((file) => ({ file, url: URL.createObjectURL(file) })),
-        [newFiles]
-    );
-
-    useEffect(() => () => previews.forEach((p) => URL.revokeObjectURL(p.url)), [previews]);
+    // Object URL lifecycle: create + revoke in the same effect so we never have two
+    // generations of object URLs alive at once between render and cleanup.
+    useEffect(() => {
+        const next = newFiles.map((file) => ({ file, url: URL.createObjectURL(file) }));
+        setPreviews(next);
+        return () => next.forEach((p) => URL.revokeObjectURL(p.url));
+    }, [newFiles]);
 
     const totalCount = existingImages.length + newFiles.length;
 

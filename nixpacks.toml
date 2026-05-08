@@ -1,13 +1,16 @@
 # Railway / Nixpacks deployment config.
 # - composer.json declares ext-pdo_pgsql, so Nixpacks builds PHP with the Postgres driver.
-# - Vite assets are built during the build phase.
-# - Migrations run before the web server starts on every deploy.
+# - Vite assets and the FrankenPHP runtime are installed during the build phase.
+# - Migrations run via railway.toml's preDeployCommand (NOT here) so a failed
+#   migration aborts the deploy without taking down the previously running version.
 
 [phases.build]
 cmds = [
   "npm run build",
   "php artisan storage:link || true",
+  "curl -fsSL https://github.com/dunglas/frankenphp/releases/latest/download/frankenphp-linux-x86_64 -o /usr/local/bin/frankenphp",
+  "chmod +x /usr/local/bin/frankenphp",
 ]
 
 [start]
-cmd = "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT"
+cmd = "frankenphp php-server -r public/ --listen=0.0.0.0:$PORT"

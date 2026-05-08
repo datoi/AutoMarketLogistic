@@ -32,9 +32,13 @@ class CloudinaryService
     }
 
     /**
-     * Upload an image and return its delivery URL.
+     * Upload an image and return both its delivery URL and the public_id needed
+     * to delete it later. Storing public_id alongside the URL avoids the brittle
+     * regex round-trip we used to do.
+     *
+     * @return array{url: string, public_id: string}
      */
-    public function upload(UploadedFile $file): string
+    public function upload(UploadedFile $file): array
     {
         $result = $this->client()->uploadApi()->upload($file->getRealPath(), [
             'folder'         => $this->folder(),
@@ -43,20 +47,22 @@ class CloudinaryService
             'unique_filename' => true,
         ]);
 
-        if (empty($result['secure_url'])) {
-            throw new RuntimeException('Cloudinary upload did not return a secure_url.');
+        if (empty($result['secure_url']) || empty($result['public_id'])) {
+            throw new RuntimeException('Cloudinary upload did not return a secure_url + public_id pair.');
         }
 
-        return (string) $result['secure_url'];
+        return [
+            'url'       => (string) $result['secure_url'],
+            'public_id' => (string) $result['public_id'],
+        ];
     }
 
     /**
-     * Best-effort delete by URL. Silently no-ops for non-Cloudinary URLs (e.g. legacy picsum).
+     * Best-effort delete by public_id. No-ops for null (legacy non-Cloudinary entries).
      */
-    public function destroyByUrl(string $url): void
+    public function destroy(?string $publicId): void
     {
-        $publicId = $this->extractPublicId($url);
-        if ($publicId === null) {
+        if ($publicId === null || $publicId === '') {
             return;
         }
 
@@ -65,27 +71,5 @@ class CloudinaryService
         } catch (\Throwable) {
             // Deletion is best-effort — don't block save flow on Cloudinary or config errors.
         }
-    }
-
-    /**
-     * Pull the public_id (incl. folder) out of a Cloudinary delivery URL.
-     * Returns null when the URL isn't a Cloudinary asset.
-     */
-    private function extractPublicId(string $url): ?string
-    {
-        if (! preg_match('#^https?://res\.cloudinary\.com/[^/]+/image/upload/(.+)$#', $url, $m)) {
-            return null;
-        }
-
-        $path = $m[1];
-
-        // Strip any leading transformations (segments before the version, e.g. "w_400,h_300/")
-        // Version segment looks like "v1234567890". Everything after it is the public_id (with extension).
-        if (preg_match('#(?:^|/)(v\d+)/(.+)$#', $path, $vm)) {
-            $path = $vm[2];
-        }
-
-        // Drop the file extension.
-        return preg_replace('/\.[a-zA-Z0-9]+$/', '', $path);
     }
 }

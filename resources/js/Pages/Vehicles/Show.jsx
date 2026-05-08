@@ -37,7 +37,7 @@ export default function Show({ vehicle, related }) {
                     {/* Left: Gallery + Details */}
                     <div className="lg:col-span-2 space-y-6">
                         <ImageGallery
-                            images={vehicle.images}
+                            images={(vehicle.images ?? []).map((i) => i.url)}
                             alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
                         />
 

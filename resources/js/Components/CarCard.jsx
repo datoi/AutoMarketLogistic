@@ -1,7 +1,7 @@
 import { Link } from '@inertiajs/react';
 
 export default function CarCard({ vehicle }) {
-    const image = vehicle.images?.[0] ?? 'https://placehold.co/800x600/232837/9aa1ad?text=No+Image';
+    const image = vehicle.images?.[0]?.url ?? 'https://placehold.co/800x600/232837/9aa1ad?text=No+Image';
 
     return (
         <Link

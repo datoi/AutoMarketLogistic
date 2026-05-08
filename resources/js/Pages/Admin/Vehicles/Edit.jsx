@@ -21,7 +21,7 @@ export default function Edit({ vehicle }) {
         primary_damage:     vehicle.primary_damage ?? '',
         secondary_damage:   vehicle.secondary_damage ?? '',
         highlights:         (vehicle.highlights ?? []).join('\n'),
-        existing_images:    vehicle.images ?? [],
+        existing_images:    (vehicle.images ?? []).map((i) => i.url),
         new_files:          [],
         estimated_arrival:  vehicle.estimated_arrival ?? '',
         description:        vehicle.description ?? '',
@@ -31,7 +31,10 @@ export default function Edit({ vehicle }) {
 
     const submit = (e) => {
         e.preventDefault();
-        // Inertia + Laravel: file uploads with PUT need POST + _method spoofing.
+        // File uploads with PUT need POST + `_method` spoofing on the Laravel side.
+        // Don't chain `.transform(...).post(...)` — useForm().transform() returns void
+        // in this Inertia version, so the chain throws "Cannot read properties of
+        // undefined (reading 'post')" and the Save button silently does nothing.
         form.transform((data) => ({ ...data, _method: 'put' }));
         form.post(route('admin.vehicles.update', vehicle.id), {
             forceFormData: true,
@@ -49,7 +52,7 @@ export default function Edit({ vehicle }) {
             <Head title="Edit Vehicle" />
             <div className="py-6">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <VehicleForm form={form} onSubmit={submit} submitLabel="Save Changes" />
+                    <VehicleForm form={form} onSubmit={submit} submitLabel="Save Changes" mode="edit" />
                 </div>
             </div>
         </AuthenticatedLayout>

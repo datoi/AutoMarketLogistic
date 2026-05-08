@@ -116,8 +116,6 @@ export default function Home({ featured = [] }) {
                 </section>
             )}
 
-           
-
             {/* CTA */}
             <section className="relative bg-ink-900 text-white py-16 lg:py-20 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-ink-900 via-ink-800 to-brand-800/60" />

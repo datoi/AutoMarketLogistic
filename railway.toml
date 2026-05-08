@@ -1,0 +1,6 @@
+# Railway service config.
+# preDeployCommand runs in a temporary container after build succeeds and BEFORE
+# traffic is switched to the new image. If migrations fail here, the deploy aborts
+# and the previous version keeps serving — exactly the safety net we want.
+[deploy]
+preDeployCommand = "php artisan migrate --force"

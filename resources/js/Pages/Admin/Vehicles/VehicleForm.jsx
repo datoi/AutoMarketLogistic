@@ -6,8 +6,11 @@ const STATUSES     = ['In Transit', 'At Port', 'Available', 'Sold'];
 const FUELS        = ['Gasoline', 'Diesel', 'Hybrid', 'Electric', 'Other'];
 const TRANSMISSIONS = ['Automatic', 'Manual', 'CVT', 'Other'];
 
-export default function VehicleForm({ form, onSubmit, submitLabel }) {
+export default function VehicleForm({ form, onSubmit, submitLabel, mode = 'create' }) {
     const { data, setData, errors, processing } = form;
+    // Backend enforces `after_or_equal:today` only on create; on edit a stored past
+    // date must remain valid so the form can save without forcing the admin to retype it.
+    const arrivalMin = mode === 'create' ? new Date().toISOString().split('T')[0] : undefined;
 
     return (
         <form onSubmit={onSubmit} className="space-y-6">
@@ -52,7 +55,7 @@ export default function VehicleForm({ form, onSubmit, submitLabel }) {
                     </Field>
                     <Field label="Estimated Arrival" error={errors.estimated_arrival}>
                         <input type="date" value={data.estimated_arrival} onChange={(e) => setData('estimated_arrival', e.target.value)}
-                            className="input" />
+                            className="input" min={arrivalMin} />
                     </Field>
                     <Field label="Color" error={errors.color}>
                         <input value={data.color} onChange={(e) => setData('color', e.target.value)}
