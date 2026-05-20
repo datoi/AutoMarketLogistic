@@ -204,13 +204,13 @@ export default function Show({ vehicle, related }) {
                                         </p>
 
                                         <a
-                                            href="tel:+995592243623"
+                                            href="tel:+995322054244"
                                             className="flex items-center justify-center gap-2 w-full bg-brand-500 hover:bg-brand-600 text-white font-semibold py-3 rounded-lg transition shadow-lg"
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
                                                 <path d="M2 3.5A1.5 1.5 0 013.5 2h2.379a1.5 1.5 0 011.42 1.026l1.04 3.12a1.5 1.5 0 01-.502 1.685l-1.343.96a11.042 11.042 0 005.116 5.116l.96-1.343a1.5 1.5 0 011.685-.502l3.12 1.04A1.5 1.5 0 0118 14.621V17a1.5 1.5 0 01-1.5 1.5h-1C7.387 18.5 1.5 12.613 1.5 5.5v-1z" />
                                             </svg>
-                                            +995 592 243 623
+                                            +995 32 205 42 44
                                         </a>
 
                                         <Link

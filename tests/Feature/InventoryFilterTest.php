@@ -44,7 +44,8 @@ class InventoryFilterTest extends TestCase
 
     public function test_unknown_vehicle_id_returns_404(): void
     {
-        $this->get('/inventory/99999')->assertNotFound();
+        $default = config('locales.default');
+        $this->get("/{$default}/inventory/99999")->assertNotFound();
     }
 
     /** Regression: BUG-8 — sold vehicles stay viewable so old links don't 404. */

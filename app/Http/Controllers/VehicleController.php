@@ -37,7 +37,7 @@ class VehicleController extends Controller
         ]);
     }
 
-    public function show(Vehicle $vehicle): Response
+    public function show(string $locale, Vehicle $vehicle): Response
     {
         $related = Vehicle::where('make', $vehicle->make)
             ->where('id', '!=', $vehicle->id)

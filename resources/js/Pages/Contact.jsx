@@ -45,9 +45,9 @@ export default function Contact({ vehicleId, vehicleTitle, settings = {} }) {
                         <ContactInfo
                             icon={<PhoneIcon />}
                             title="Phone"
-                            primary={settings.contact_phone ?? '+995 592 243 623'}
+                            primary={settings.contact_phone ?? '+995 32 205 42 44'}
                             secondary={settings.contact_hours ?? 'Mon–Sat, 9:00–18:00'}
-                            href={`tel:${(settings.contact_phone ?? '+995592243623').replace(/\s/g, '')}`}
+                            href={`tel:${(settings.contact_phone ?? '+995322054244').replace(/\s/g, '')}`}
                         />
                         <ContactInfo
                             icon={<MailIcon />}

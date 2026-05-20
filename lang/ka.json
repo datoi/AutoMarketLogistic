@@ -1,0 +1,7 @@
+{
+    "_comment": "Georgian translations. Each key falls back to English if value is missing. Replace this file with a translator-reviewed version before public ka launch.",
+
+    "Home": "მთავარი",
+    "Inventory": "ავტომობილები",
+    "Contact": "კონტაქტი"
+}

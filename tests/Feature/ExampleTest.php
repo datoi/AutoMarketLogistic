@@ -14,8 +14,11 @@ class ExampleTest extends TestCase
      */
     public function test_the_application_returns_a_successful_response(): void
     {
-        $response = $this->get('/');
+        $default = config('locales.default');
 
-        $response->assertStatus(200);
+        // Root redirects to the visitor's locale; the canonical homepage lives
+        // under /{locale}.
+        $this->get('/')->assertRedirect("/{$default}");
+        $this->get("/{$default}")->assertStatus(200);
     }
 }

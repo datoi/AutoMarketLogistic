@@ -3,7 +3,59 @@ import { useState } from 'react';
 import PublicLayout from '@/Layouts/PublicLayout';
 import CarCard from '@/Components/CarCard';
 
-export default function Home({ featured = [] }) {
+function TestimonialCard({ t }) {
+    const initial = (t.name || '?').trim().charAt(0).toUpperCase();
+    return (
+        <div className="bg-white rounded-2xl border border-gray-100 shadow-card p-6 flex flex-col">
+            <div className="flex items-center gap-0.5 text-amber-400" aria-label={`${t.rating} out of 5 stars`}>
+                {[1, 2, 3, 4, 5].map((n) => (
+                    <svg key={n} className={`w-4 h-4 ${n <= t.rating ? 'fill-current' : 'fill-gray-200'}`} viewBox="0 0 20 20">
+                        <path d="M10 15.27L16.18 19l-1.64-7.03L20 7.24l-7.19-.61L10 0 7.19 6.63 0 7.24l5.46 4.73L3.82 19z" />
+                    </svg>
+                ))}
+            </div>
+            <p className="text-ink-700 text-sm leading-relaxed mt-4 flex-1">
+                <span className="text-ink-300 text-lg leading-none">“</span>
+                {t.quote}
+            </p>
+            <div className="flex items-center gap-3 mt-5 pt-5 border-t border-gray-100">
+                {t.photo_url ? (
+                    <img src={t.photo_url} alt={t.name} className="w-12 h-12 rounded-full object-cover" />
+                ) : (
+                    <div className="w-12 h-12 rounded-full bg-brand-100 text-brand-700 font-bold flex items-center justify-center">
+                        {initial}
+                    </div>
+                )}
+                <div className="min-w-0">
+                    <div className="font-semibold text-ink-900 text-sm truncate">{t.name}</div>
+                    <div className="text-ink-500 text-xs truncate">
+                        {[t.city, t.vehicle_label].filter(Boolean).join(' · ')}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function PartnerLogo({ name, slug }) {
+    const [errored, setErrored] = useState(false);
+    return (
+        <div className="flex items-center justify-center h-12">
+            {errored ? (
+                <span className="font-bold text-ink-400 uppercase tracking-wider text-sm">{name}</span>
+            ) : (
+                <img
+                    src={`/images/partners/${slug}.svg`}
+                    alt={name}
+                    className="max-h-8 lg:max-h-10 w-auto text-ink-700 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition"
+                    onError={() => setErrored(true)}
+                />
+            )}
+        </div>
+    );
+}
+
+export default function Home({ featured = [], testimonials = [] }) {
     const [search, setSearch] = useState('');
 
     const handleSearch = (e) => {
@@ -91,6 +143,92 @@ export default function Home({ featured = [] }) {
                 </div>
             </section>
 
+            {/* How It Works */}
+            <section id="how-it-works" className="bg-gray-50 py-16 lg:py-20">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="text-center max-w-2xl mx-auto">
+                        <span className="text-xs font-semibold text-brand-600 uppercase tracking-wider">Simple process</span>
+                        <h2 className="text-2xl sm:text-3xl font-bold text-ink-900 mt-1">How importing works</h2>
+                        <p className="text-ink-500 text-sm mt-1">From auction to your driveway in ~6 weeks</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+                        {[
+                            {
+                                n: 1,
+                                title: 'You tell us what you want',
+                                desc: "Pick from our inventory, or describe the car you're looking for — make, model, year, budget.",
+                                icon: (
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z" />
+                                ),
+                            },
+                            {
+                                n: 2,
+                                title: 'We buy it at auction',
+                                desc: 'Our team bids on your behalf at Copart and IAAI USA auctions, with full lot inspection.',
+                                icon: (
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                                ),
+                            },
+                            {
+                                n: 3,
+                                title: 'We ship it to you',
+                                desc: 'Ocean freight from US ports, fully insured. Customs and duties handled end-to-end.',
+                                icon: (
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7h13v10H3V7zm13 3h4l1 3v4h-5v-7zM5.5 17a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zm11 0a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0z" />
+                                ),
+                            },
+                            {
+                                n: 4,
+                                title: 'You take delivery',
+                                desc: 'Pickup from our yard or door delivery to your city — your choice.',
+                                icon: (
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 7a4 4 0 11-8 0 4 4 0 018 0zm-4 4l-6 6 2 2 6-6m4-4l3 3-2 2-3-3" />
+                                ),
+                            },
+                        ].map((step) => (
+                            <div key={step.n} className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+                                <div className="w-10 h-10 rounded-full bg-brand-500 text-white font-bold flex items-center justify-center text-sm">
+                                    {step.n}
+                                </div>
+                                <svg className="w-6 h-6 text-brand-500 mt-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    {step.icon}
+                                </svg>
+                                <h3 className="font-semibold text-ink-900 mt-4 text-base">{step.title}</h3>
+                                <p className="text-sm text-ink-500 mt-2 leading-relaxed">{step.desc}</p>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="text-center mt-10">
+                        <Link
+                            href={route('contact')}
+                            className="inline-flex items-center gap-1.5 text-brand-600 hover:text-brand-700 text-sm font-semibold"
+                        >
+                            Have questions about the process? Talk to us
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                        </Link>
+                    </div>
+                </div>
+            </section>
+
+            {/* Testimonials — hidden when fewer than 3 active (handled server-side) */}
+            {testimonials.length >= 3 && (
+                <section className="bg-white py-16 lg:py-20">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="text-center max-w-2xl mx-auto">
+                            <span className="text-xs font-semibold text-brand-600 uppercase tracking-wider">Real customers</span>
+                            <h2 className="text-2xl sm:text-3xl font-bold text-ink-900 mt-1">What our buyers say</h2>
+                        </div>
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-12">
+                            {testimonials.map((t) => <TestimonialCard key={t.id} t={t} />)}
+                        </div>
+                    </div>
+                </section>
+            )}
+
             {/* Featured Vehicles */}
             {featured.length > 0 && (
                 <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
@@ -116,6 +254,21 @@ export default function Home({ featured = [] }) {
                 </section>
             )}
 
+            {/* Trust strip — partner auctions */}
+            <section className="bg-white border-y border-gray-100 py-12 lg:py-14">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <p className="text-center text-xs font-semibold text-ink-400 uppercase tracking-wider">
+                        Sourced from
+                    </p>
+                    <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-6 items-center max-w-3xl mx-auto">
+                        <PartnerLogo name="Copart" slug="copart" />
+                        <PartnerLogo name="IAAI" slug="iaai" />
+                        <PartnerLogo name="Manheim" slug="manheim" />
+                        <PartnerLogo name="Adesa" slug="adesa" />
+                    </div>
+                </div>
+            </section>
+
             {/* CTA */}
             <section className="relative bg-ink-900 text-white py-16 lg:py-20 overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-ink-900 via-ink-800 to-brand-800/60" />
@@ -136,7 +289,7 @@ export default function Home({ featured = [] }) {
                             </svg>
                         </Link>
                         <a
-                            href="tel:+995592243623"
+                            href="tel:+995322054244"
                             className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/15 border border-white/20 text-white font-semibold px-7 py-3 rounded-lg transition"
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
